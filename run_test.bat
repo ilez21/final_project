@@ -1,0 +1,9 @@
+@echo off
+echo Starting server...
+start /B go run main.go
+timeout /t 12 /nobreak >nul
+echo Running tests...
+go test ./tests -v
+echo.
+echo Stopping server...
+taskkill /F /IM main.exe 2>nul
