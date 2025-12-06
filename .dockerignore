@@ -1,0 +1,8 @@
+scheduler.db
+*.exe
+.git
+.github
+tests
+run_test.bat
+start_server.bat
+README.md
