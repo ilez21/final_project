@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,18 +13,22 @@ import (
 var jwtSecret = []byte("my-secret-key")
 
 func signinHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var req struct {
 		Password string `json:"password"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeJSON(w, map[string]string{"error": "Ошибка декодирования запроса"})
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Ошибка декодирования запроса"})
 		return
 	}
 
-	envPassword := os.Getenv("TODO_PASSWORD")
-	if envPassword == "" || req.Password != envPassword {
-		writeJSON(w, map[string]string{"error": "Неверный пароль"})
+	if password == "" || req.Password != password {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Неверный пароль"})
 		return
 	}
 
@@ -39,17 +42,16 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
-		writeJSON(w, map[string]string{"error": "Ошибка создания токена"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Ошибка создания токена"})
 		return
 	}
 
-	writeJSON(w, map[string]string{"token": tokenString})
+	writeJSON(w, http.StatusOK, map[string]string{"token": tokenString})
 }
 
 func auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		pass := os.Getenv("TODO_PASSWORD")
-		if pass == "" {
+		if password == "" {
 			next(w, r)
 			return
 		}
@@ -75,7 +77,7 @@ func auth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		hash := sha256.Sum256([]byte(pass))
+		hash := sha256.Sum256([]byte(password))
 		hashStr := hex.EncodeToString(hash[:])
 
 		if claims["hash"] != hashStr {

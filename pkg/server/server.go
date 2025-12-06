@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func Start() {
+func Start() error {
 	port := os.Getenv("TODO_PORT")
 	if port == "" {
 		port = "7540"
@@ -17,7 +17,5 @@ func Start() {
 	http.Handle("/", http.FileServer(http.Dir("./web")))
 
 	log.Printf("Starting server on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatal(err)
-	}
+	return http.ListenAndServe(":"+port, nil)
 }

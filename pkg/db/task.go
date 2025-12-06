@@ -55,7 +55,11 @@ func Tasks(limit int, search string) ([]*Task, error) {
 		tasks = append(tasks, &task)
 	}
 
-	return tasks, rows.Err()
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
 }
 
 func GetTask(id string) (*Task, error) {

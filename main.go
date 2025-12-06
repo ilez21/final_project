@@ -16,6 +16,9 @@ func main() {
 	if err := db.Init(dbFile); err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
-	server.Start()
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
 }
